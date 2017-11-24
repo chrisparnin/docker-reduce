@@ -1,0 +1,21 @@
+---
+# Set a name for your environment which will be used in virtualbox and vagrant.
+name: docker-reduce 
+
+vagrant:
+  box: "ubuntu/xenial64"
+
+  memory: "8192"
+  network:
+    - private_network:
+        ip: "192.168.9.9"
+
+# # Define provisioning steps here
+bake:
+   # The ansible playbooks that you want to run for the VM
+   ansible:
+     # source is the directory of the ansible playbooks
+     source: env/
+     playbooks:
+       - provision.yml
+
