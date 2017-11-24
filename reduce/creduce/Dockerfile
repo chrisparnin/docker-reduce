@@ -1,4 +1,4 @@
-FROM ubuntu:precise-cache
+FROM ubuntu:precise-cached
 
 ENV CREDUCE /creduce
 RUN mkdir $CREDUCE
