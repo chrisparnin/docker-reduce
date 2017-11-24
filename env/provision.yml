@@ -1,6 +1,5 @@
 ---
 - hosts: all 
-  become: yes
 
   tasks:
  
@@ -9,24 +8,30 @@
         id: "58118E89F3A912897C070ADBF76221572C52609D"
         keyserver: "hkp://p80.pool.sks-keyservers.net:80"
         state: present
+      become: yes
 
     - name: ensure docker registry is available
       # For Ubuntu 14.04 LTS, use this repository:
       #apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' state=present
       # For Ubuntu 16.04 LTS, use this repo instead:
       apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-xenial main' state=present
+      become: yes
 
     - name: ensure docker and dependencies are installed
       apt: name=docker-engine update_cache=yes
+      become: yes
 
     # Uncomment the following to enable insecure registries with Docker
     - name: ensure docker can use insecure registries in 10.11.0.0/16
       lineinfile: "dest=/etc/default/docker regexp=^DOCKER_OPTS line=DOCKER_OPTS='--insecure-registry 10.11.0.0/16'"
+      become: yes
 
     - service: name=docker state=restarted
+      become: yes
 
     - name: add user to docker group
       user: name=ubuntu groups=docker append=yes
+      become: yes
 
     - name: Remove clang/llvm
       apt: pkg={{ item }} state=absent force=yes
@@ -34,11 +39,13 @@
         - clang
         - llvm
         - llvm-runtime
+      become: yes
 
     - name: add llvm repo
       apt_repository:
         repo: deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main
         state: present
+      become: yes
 
     - name: Install basic utils and build envs.
       apt: pkg={{ item }} state=present update_cache=true cache_valid_time=3600 force=yes
@@ -50,7 +57,9 @@
         - llvm-4.0
         - clang-4.0
         - clang-format-4.0
+        - libclang-4.0-dev
         - libedit-dev
+      become: yes
 
     - name: Install libraries
       apt: pkg={{ item }} state=present update_cache=true cache_valid_time=3600 force=yes
@@ -64,22 +73,26 @@
         - zlib1g-dev
         - libterm-readkey-perl 
         - libsys-cpu-perl
+      become: yes
 
     - name: download cpanm
       get_url: url=http://cpanmin.us/
                dest=/tmp/cpanm.pl
                mode=755
+      become: yes
 
     - name: install cpanm so that we can use the ansible cpanm module
       command: perl cpanm.pl App::cpanminus
       args:
         chdir: /tmp/
         creates: /usr/local/bin/cpanm
+      become: yes
 
     - name: add cpanm symbolic link to /usr/bin/
       file: src=/usr/local/bin/cpanm
             dest=/usr/bin/cpanm
             state=link
+      become: yes
 
     - name: Install perl modules
       cpanm: name={{item}}
@@ -90,9 +103,25 @@
         - Regexp::Common
         - Term::ReadKey
         - Sys::CPU
+      become: yes
+
+    - file:
+        path: /srv
+        state: directory
+        mode: 0755
+        owner: ubuntu
+        group: ubuntu
+      become:  yes
 
     - name: Get creduce
       git: 
         repo: https://github.com/csmith-project/creduce 
-        dest: /creduce
+        dest: /srv/creduce
+
+    - name: Set CC
+      lineinfile: dest=~/.bashrc line='export CC=/usr/lib/llvm-4.0/bin/clang' insertafter='EOF' state=present
+
+    - name: Set CCX
+      lineinfile: dest=~/.bashrc line='export CXX=/usr/lib/llvm-4.0/bin/clang++' insertafter='EOF' state=present
+
 
