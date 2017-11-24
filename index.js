@@ -25,7 +25,7 @@ module.exports = async function(options = {}) {
     let strategy = await factory.get(options.language || 'Dockerfile');
 
     // Generate dockerfile
-    let data = await strategy.createVariations(options);
+    let data = await strategy.createVariations(options, "a\nb\nc");
     return data;
     // return Bluebird.fromCallback(cb => generator.generate(JSON.stringify(data), cb));
 
