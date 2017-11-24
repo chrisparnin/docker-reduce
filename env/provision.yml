@@ -91,5 +91,8 @@
         - Term::ReadKey
         - Sys::CPU
 
-
+    - name: Get creduce
+      git: 
+        repo: https://github.com/csmith-project/creduce 
+        dest: /creduce
 
