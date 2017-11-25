@@ -24,9 +24,9 @@ const Runner = require('./delta/runner');
 module.exports = async function(options = {}) {
     
     // Get language strategy
-    let strategy = await factory.get(options.language || 'Dockerfile');
+    let strategy = await factory.get(options.language || 'line');
 
-    let runner = new Runner("docker build .");
+    let runner = new Runner("docker build -t 'test0:latest'.", 'print("hello")', 'test0:latest');
 
     // Generate dockerfile
     let data = await strategy.createVariations(options, "a\nb\nc\nd\ne\nf", runner);

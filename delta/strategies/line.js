@@ -29,10 +29,12 @@ class LineStrategy extends DeltaStrategy {
 
         let initial = Array(lines.length).fill(true);
         let validStates = [initial];
+        let lastState = initial;
 
         while( validStates.length > 0 )
         {
             var state = validStates.pop();
+            lastState = state;
 
             for( var i = 0; i < lines.length; i++ )
             {
@@ -45,7 +47,7 @@ class LineStrategy extends DeltaStrategy {
 
                 let filtered = lines.filter( (value, index) => keepLines[index] );
 
-                if( filtered.length > 0 )
+                if( filtered.length > 1 )
                 {
                     let generated =  filtered.join("\n");
                     let genFilePath = path.join(dir, 'Dockerfile')
@@ -55,18 +57,20 @@ class LineStrategy extends DeltaStrategy {
                     console.log(generated)
 
                     let status = await runner.run(dir);
-                    if( status.error === undefined )
+                    if( status.error && status.error.code != 0 )
                     {
-                        console.log( status )
                         console.log( `code: ${status.error.code} err: ${status.stderr}`)
                     }
-                    else{ validStates.push( keepLines ); }
+                    else{ 
+                        validStates.push( keepLines ); 
+                    }
                 }
             }
             console.log(`states: ${validStates.length}`);
         }
         
-
+        let reduced = lines.filter( (value, index) => lastState[index] )
+        return reduced.join("\n");
     }
 }
 
