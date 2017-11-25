@@ -8,6 +8,8 @@ const Bluebird        = require('bluebird');
 // Local Modules
 const StrategyFactory = require('./delta/factory');
 const factory = new StrategyFactory();
+const Runner = require('./delta/runner');
+
 /**
  * Reduce a Dockerfile based on a test script.
  *
@@ -24,8 +26,10 @@ module.exports = async function(options = {}) {
     // Get language strategy
     let strategy = await factory.get(options.language || 'Dockerfile');
 
+    let runner = new Runner('ls');
+
     // Generate dockerfile
-    let data = await strategy.createVariations(options, "a\nb\nc");
+    let data = await strategy.createVariations(options, "a\nb\nc\nd\ne\n\f", runner);
     return data;
     // return Bluebird.fromCallback(cb => generator.generate(JSON.stringify(data), cb));
 

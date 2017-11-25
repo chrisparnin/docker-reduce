@@ -20,22 +20,48 @@ class LineStrategy extends DeltaStrategy {
         }));
     }
 
-    async createVariations(options, original) {
+    async createVariations(options, original, runner) {
         let tmp = os.tmpdir();
-        let dir = path.join(tmp, process.getgid())
+        let dir = path.join(tmp, 'dockerreduce'+process.pid.toString())
+        fs.mkdirSync(dir);
+
         let lines = original.split('\n');
 
-        for( var i = 0; i < lines.length; i++ )
+        let initial = Array(lines.length).fill(true);
+        let validStates = [initial];
+
+        while( validStates.length > 0 )
         {
-            let keepLines = Array(lines.length).fill(true);
-            keepLines[i] = false;
+            var state = validStates.pop();
 
-            let generated = string.join("\n", lines.filter( (value, index) => keepLines[index] ));
-            let genFilePath = path.join(dir, 'Dockerfile')
-            fs.writeFileSync( genFilePath, generated);
+            for( var i = 0; i < lines.length; i++ )
+            {
+                // This state is already mutated, stop exploring.
+                if( state[i] == false )
+                    continue
+                // Simple way to clone array.
+                let keepLines = state.slice();
+                keepLines[i] = false;
 
-            runner.run()
+                let filtered = lines.filter( (value, index) => keepLines[index] );
+
+                if( filtered.length > 0 )
+                {
+                    let generated =  filtered.join("\n");
+                    let genFilePath = path.join(dir, 'Dockerfile')
+
+                    fs.writeFileSync( genFilePath, generated);
+
+                    let status = await runner.run(genFilePath)
+                    if( !status.error )
+                    {
+                        validStates.push( keepLines );
+                    }
+                }
+            }
+            console.log(`states: ${validStates.length}`);
         }
+        
 
     }
 }

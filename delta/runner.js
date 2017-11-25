@@ -11,7 +11,7 @@ class Runner {
         this.script = script;
     }
 
-    async run()
+    async run(path)
     {
         return new Promise(async (resolve, reject) => {
             exec(this.script, (err, stdout, stderr) => {
@@ -23,3 +23,5 @@ class Runner {
         });
     }
 }
+
+module.exports = Runner;
