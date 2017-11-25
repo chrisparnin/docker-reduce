@@ -18,9 +18,9 @@ describe('testMain', function()
     });
     describe('#run()', function()
     {
-        this.timeout(400000);
+        this.timeout(800000);
 
-        it('should not minimize this', function(done) {
+        it('should remove git and FAKE PIE env variable', function(done) {
 
 var example = `# Import modules from networkx and matplotlib
 from networkx.drawing.nx_agraph import graphviz_layout
@@ -45,6 +45,16 @@ RUN pip install pygraphviz
 RUN pip install matplotlib
 RUN pip install networkx`;
 
+var dockerFat = `FROM python:2.7.13
+VOLUME /output
+ENV MPLBACKEND Agg
+ENV FAKE PIE
+RUN apt-get update
+RUN apt-get install -y graphviz
+RUN apt-get install -y git
+RUN pip install pygraphviz
+RUN pip install matplotlib
+RUN pip install networkx`;
 
             (async () => {
 
@@ -53,7 +63,7 @@ RUN pip install networkx`;
                 let runner = new Runner("docker build -t test0:latest .", example, 'test0:latest');
                 
                 // Generate dockerfile
-                let data = await strategy.createVariations({}, dockerfile, runner);
+                let data = await strategy.createVariations({}, dockerFat, runner);
 
                 expect(data).to.equal(dockerfile);
                 done();
