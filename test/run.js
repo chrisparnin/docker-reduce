@@ -21,6 +21,7 @@ describe('testMain', function()
         this.timeout(400000);
 
         it('should not minimize this', function(done) {
+
 var example = `# Import modules from networkx and matplotlib
 from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.pyplot as plot
@@ -53,7 +54,6 @@ RUN pip install networkx`;
                 
                 // Generate dockerfile
                 let data = await strategy.createVariations({}, dockerfile, runner);
-                return data;
 
                 expect(data).to.equal(dockerfile);
                 done();

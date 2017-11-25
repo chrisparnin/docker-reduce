@@ -21,56 +21,65 @@ class LineStrategy extends DeltaStrategy {
     }
 
     async createVariations(options, original, runner) {
-        let tmp = os.tmpdir();
-        let dir = path.join(tmp, 'dockerreduce'+process.pid.toString())
-        fs.mkdirSync(dir);
 
-        let lines = original.split('\n');
-
-        let initial = Array(lines.length).fill(true);
-        let validStates = [initial];
-        let lastState = initial;
-
-        while( validStates.length > 0 )
+        return new Promise( async(resolve, reject) =>
         {
-            var state = validStates.pop();
-            lastState = state;
+            let tmp = os.tmpdir();
+            let dir = path.join(tmp, 'dockerreduce'+process.pid.toString())
+            fs.mkdirSync(dir);
 
-            for( var i = 0; i < lines.length; i++ )
+            let lines = original.split('\n');
+
+            let initial = Array(lines.length).fill(true);
+            let validStates = [initial];
+            let lastState = initial;
+
+            while( validStates.length > 0 )
             {
-                // This state is already mutated, stop exploring.
-                if( state[i] == false )
-                    continue
-                // Simple way to clone array.
-                let keepLines = state.slice();
-                keepLines[i] = false;
+                var state = validStates.pop();
+                lastState = state;
 
-                let filtered = lines.filter( (value, index) => keepLines[index] );
-
-                if( filtered.length > 1 )
+                for( var i = 0; i < lines.length; i++ )
                 {
-                    let generated =  filtered.join("\n");
-                    let genFilePath = path.join(dir, 'Dockerfile')
+                    // This state is already mutated, stop exploring.
+                    if( state[i] == false )
+                        continue
+                    // Simple way to clone array.
+                    let keepLines = state.slice();
+                    keepLines[i] = false;
 
-                    fs.writeFileSync( genFilePath, generated);
+                    let filtered = lines.filter( (value, index) => keepLines[index] );
 
-                    console.log(generated)
-
-                    let status = await runner.run(dir);
-                    if( status.error && status.error.code != 0 )
+                    if( filtered.length > 1 )
                     {
-                        console.log( `code: ${status.error.code} err: ${status.stderr}`)
-                    }
-                    else{ 
-                        validStates.push( keepLines ); 
+                        let generated =  filtered.join("\n");
+                        let genFilePath = path.join(dir, 'Dockerfile')
+
+                        fs.writeFileSync( genFilePath, generated);
+
+                        console.log(generated)
+
+                        let status = await runner.run(dir);
+                        if( status.error && status.error.code != 0 )
+                        {
+                            console.log( `code: ${status.error.code} err: ${status.stderr}`)
+                        }
+                        else{ 
+                            validStates.push( keepLines ); 
+                        }
                     }
                 }
+                console.log(`states: ${validStates.length}`);
             }
-            console.log(`states: ${validStates.length}`);
-        }
-        
-        let reduced = lines.filter( (value, index) => lastState[index] )
-        return reduced.join("\n");
+            
+            console.log( "REDUCED STATE: ")
+            console.log( "~~~~~~~~~~~~~~~")
+            
+            let reduced = lines.filter( (value, index) => lastState[index] )
+            let output = reduced.join("\n")
+            console.log(output)
+            resolve(output);
+        });
     }
 }
 
