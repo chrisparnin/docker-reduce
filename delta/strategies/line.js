@@ -52,11 +52,15 @@ class LineStrategy extends DeltaStrategy {
 
                     fs.writeFileSync( genFilePath, generated);
 
-                    let status = await runner.run(genFilePath)
-                    if( !status.error )
+                    console.log(generated)
+
+                    let status = await runner.run(dir);
+                    if( status.error === undefined )
                     {
-                        validStates.push( keepLines );
+                        console.log( status )
+                        console.log( `code: ${status.error.code} err: ${status.stderr}`)
                     }
+                    else{ validStates.push( keepLines ); }
                 }
             }
             console.log(`states: ${validStates.length}`);

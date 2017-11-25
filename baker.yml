@@ -18,4 +18,5 @@ bake:
      source: env/
      playbooks:
        - provision.yml
+       - nodejs.yml
 

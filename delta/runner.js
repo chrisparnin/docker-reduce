@@ -14,12 +14,21 @@ class Runner {
     async run(path)
     {
         return new Promise(async (resolve, reject) => {
-            exec(this.script, (err, stdout, stderr) => {
-            if (err) {
-                reject({error: err, stderr: stderr});
+            let cmd = `cd ${path} && ${this.script}`;
+            try
+            {
+                exec(cmd, (err, stdout, stderr) => {
+                    if (err) {
+                        console.log( err )
+                        resolve({error: err, stderr: stderr});
+                    }
+                    resolve({error: undefined, stdout: stdout});
+                });
             }
-            resolve({error: null, stdout: stdout});
-            });
+            catch(err)
+            {
+                resolve({error: err, stderr: "exception"});
+            }
         });
     }
 }
