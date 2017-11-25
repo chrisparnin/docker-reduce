@@ -31,6 +31,10 @@ class LineStrategy extends DeltaStrategy {
             let lines = original.split('\n');
 
             let initial = Array(lines.length).fill(true);
+
+            let cacheOutcomes = Array(lines.length).fill(true);
+            
+
             let validStates = [initial];
             let lastState = initial;
 
@@ -41,8 +45,8 @@ class LineStrategy extends DeltaStrategy {
 
                 for( var i = 0; i < lines.length; i++ )
                 {
-                    // This state is already mutated, stop exploring.
-                    if( state[i] == false )
+                    // This state is already mutated, or failed in past, stop exploring.
+                    if( state[i] == false || cacheOutcomes[i] == false)
                         continue
                     // Simple way to clone array.
                     let keepLines = state.slice();
@@ -63,6 +67,8 @@ class LineStrategy extends DeltaStrategy {
                         if( status.error && status.error.code != 0 )
                         {
                             console.log( `code: ${status.error.code} err: ${status.stderr}`)
+                            // mark state for future.
+                            cacheOutcomes[i] = false;
                         }
                         else{ 
                             validStates.push( keepLines ); 
